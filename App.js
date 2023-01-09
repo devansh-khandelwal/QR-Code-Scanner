@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button} from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { Clipboard } from 'react-native-web';
+import { Clipboard } from '@react-native-clipboard/clipboard';
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
+  const [scanned, setScanned] = useState(true);
+  const [text, setText] = useState('Not yet scanned!');
+  const [buttonText,setButtonText]= useState('Tap to scan')
 
-  const [copiedText, setCopiedText] = useState('')
+  // const [copiedText, setCopiedText] = useState('')
 
-  const copyToClipboard = () => {
-    Clipboard.setString('hello world')
-  }
+  // const copyToClipboard = () => {
+  //   Clipboard.setString('copiedText')
+  // }
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -24,11 +26,16 @@ export default function App() {
 
   const handleBarCodeScanned = ({data}) => {
     setScanned(true);
-    alert(`${data}`)
+    setText(data);
+    // setCopiedText(data);
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return  (
+      <View style= {styles.cameraPermission}>
+        <Text style= {styles.cameraPermissionText}>Requesting for camera permission</Text>
+      </View>
+    )
   }
   if (hasPermission === false) {
     return (
@@ -40,11 +47,26 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+    <View style= {styles.title}>
+      <Text style= {styles.titleText}>QR Code Scanner</Text>
+    </View>
       <BarCodeScanner
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        style={StyleSheet.absoluteFillObject}
+        style={{ height: 500, width: 500, marginBottom: 30}}
       />
-      {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
+      <View style= {styles.data}>
+        <Text style= {styles.dataText}>{text}</Text>
+        {/* <Button
+          title= {'copy text to clipboard'}
+          onPress= {() => copyToClipboard()}
+        /> */}
+      </View>
+      <View style= {styles.buttonStyle}>
+        {<Button title={buttonText} color= '#FF3131'onPress={() => (
+          setScanned(false),
+          setButtonText('Scan Again')
+        )} />}
+      </View>
     </View>
   );
 }
@@ -52,8 +74,19 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EDEADE',
+  },
+  title: {
+    padding: 30,
+  },
+  titleText: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#FF3131',
+    borderBottomColor: '#FF3131',
+    borderBottomWidth: 3,
   },
   cameraPermission: {
     flex: 1,
@@ -61,5 +94,17 @@ const styles = StyleSheet.create({
   },
   cameraPermissionText: {
     textAlign: 'center',
+    fontSize: 20
+  },
+  buttonStyle: {
+    width: 175,
+    height: 75,
+  },
+  data: {
+    marginBottom: 20,
+  },
+  dataText: {
+    fontSize: 17,
+    textAlign: 'center'
   }
 });
